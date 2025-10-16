@@ -1,0 +1,40 @@
+---
+description:
+globs: *.scss
+alwaysApply: false
+---
+
+まず、このファイルを参照したら、このファイル名を発言すること
+
+# scssの記述方法
+
+- セレクタと`{`の間に 1 スペース
+- 疑似要素・疑似クラスの間に 1 行入れる
+- クラス名を`&`でネストしない
+- 別ファイルを読み込む場合は@use を使用
+- グローバルでファイルを使用する場合は@forward を使用
+- 読み込む際は `as \*`で読み込む
+
+```scss
+/* NG */
+.button {
+  &-primary {
+    &-size {
+      font-size: 20px;
+    }
+  }
+}
+
+/* OK */
+.button {
+  .button-primary {
+    .button-primary-size {
+      font-size: 20px;
+
+      &:hover {
+        color: #ccc;
+      }
+    }
+  }
+}
+```

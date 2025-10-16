@@ -1,0 +1,642 @@
+---
+description: Notionルール
+globs:
+alwaysApply: false
+---
+
+Notion MCP Server を使ってドキュメントのやり取りを行う場合、このファイル名を発言すること
+
+# Notion MCP Server ルールブック
+
+## 基本原則
+
+**重要**: Notion への書き込みを行う際、AI はプレーンテキスト形式の Markdown 記号（##, \*, ```）を**絶対に使用してはならない**。代わりに、Notion API を通じてネイティブなブロックタイプ（H1/H2/H3, bulleted_list, numbered_list, code, callout など）を生成するツールを常に優先すること。
+
+**構造エラー防止**: API 呼び出し前に必ず構造を検証し、children パラメータと annotations の配置を正しく設定すること。構造エラーは作業効率を大幅に低下させるため、事前検証を徹底する。
+
+## ブロックタイプ対応表
+
+### 見出し
+
+- **H1 見出し**: `{"type": "heading_1", "heading_1": {"rich_text": [{"type": "text", "text": {"content": "タイトル"}}]}}`
+- **H2 見出し（背景色オレンジ）**: `{"type": "heading_2", "heading_2": {"rich_text": [{"type": "text", "text": {"content": "見出し"}}], "color": "orange_background"}}`
+- **H3 見出し（背景色ブラウン）**: `{"type": "heading_3", "heading_3": {"rich_text": [{"type": "text", "text": {"content": "小見出し"}}], "color": "brown_background"}}`
+
+### リスト
+
+- **箇条書きリスト**: `{"type": "bulleted_list_item", "bulleted_list_item": {"rich_text": [{"type": "text", "text": {"content": "項目"}}]}}`
+- **番号付きリスト**: `{"type": "numbered_list_item", "numbered_list_item": {"rich_text": [{"type": "text", "text": {"content": "項目"}}]}}`
+
+### 箇条書きの構造ルール
+
+#### タイトルと説明の分離
+
+箇条書きで項目を説明する際は、**タイトルと説明を必ず分離する**。
+
+##### ❌ ダメな例（タイトルと説明が同一行）
+
+```json
+{
+  "type": "bulleted_list_item",
+  "bulleted_list_item": {
+    "rich_text": [
+      {
+        "type": "text",
+        "text": {
+          "content": "ヒノカミ神楽のシーン",
+          "annotations": { "bold": true }
+        }
+      },
+      {
+        "type": "text",
+        "text": {
+          "content": "：第19話の戦闘シーンは世界中で話題となり、SNSでのバイラル拡散を生んだ"
+        }
+      }
+    ]
+  }
+}
+```
+
+##### ✅ 正しい例（タイトルと説明を分離）
+
+```json
+// タイトル行
+{"type": "bulleted_list_item", "bulleted_list_item": {"rich_text": [{"type": "text", "text": {"content": "ヒノカミ神楽のシーン", "annotations": {"bold": true}}}]}}
+
+// 説明行（インデント付き）
+{"type": "bulleted_list_item", "bulleted_list_item": {"rich_text": [{"type": "text", "text": {"content": "第19話の戦闘シーンは世界中で話題となり、SNSでのバイラル拡散を生んだ"}}]}}
+```
+
+#### 実装パターン
+
+1. **メイン項目**: 太字でタイトルを記載
+2. **説明項目**: インデント付きで詳細説明を記載
+3. **複数説明**: 必要に応じて複数の説明項目を追加可能
+
+### 番号付きリストの構造ルール
+
+#### タイトルと説明の分離
+
+番号付きリストで項目を説明する際は、**タイトルと説明を必ず分離する**。
+
+##### ❌ ダメな例（タイトルと説明が同一行）
+
+```json
+{
+  "type": "numbered_list_item",
+  "numbered_list_item": {
+    "rich_text": [
+      {
+        "type": "text",
+        "text": {
+          "content": "顧客ヒアリング",
+          "annotations": { "bold": true }
+        }
+      },
+      {
+        "type": "text",
+        "text": {
+          "content": "ビジネス要件の抽出と整理"
+        }
+      }
+    ]
+  }
+}
+```
+
+##### ✅ 正しい例（タイトルと説明を分離）
+
+```json
+// タイトル行
+{"type": "numbered_list_item", "numbered_list_item": {"rich_text": [{"type": "text", "text": {"content": "顧客ヒアリング", "annotations": {"bold": true}}}]}}
+
+// 説明行（インデント付き）
+{"type": "numbered_list_item", "numbered_list_item": {"rich_text": [{"type": "text", "text": {"content": "ビジネス要件の抽出と整理"}}]}}
+```
+
+#### 実装パターン
+
+1. **メイン項目**: 太字でタイトルを記載
+2. **説明項目**: インデント付きで詳細説明を記載
+3. **複数説明**: 必要に応じて複数の説明項目を追加可能
+
+### コードブロック
+
+- **コードブロック**: `{"type": "code", "code": {"language": "python", "rich_text": [{"type": "text", "text": {"content": "コード内容"}}]}}`
+
+### その他のブロック
+
+- **段落**: `{"type": "paragraph", "paragraph": {"rich_text": [{"type": "text", "text": {"content": "テキスト"}}]}}`
+- **引用**: `{"type": "quote", "quote": {"rich_text": [{"type": "text", "text": {"content": "引用文"}}]}}`
+- **コールアウト**: `{"type": "callout", "callout": {"rich_text": [{"type": "text", "text": {"content": "コールアウト内容"}}], "icon": {"emoji": "💡"}}}`
+
+## 禁止事項
+
+### ❌ 使用禁止の Markdown 記号
+
+```markdown
+# 見出し 1
+
+## 見出し 2
+
+### 見出し 3
+
+- 箇条書き
+
+1. 番号付きリスト
+   `コード`
+```
+
+### ✅ 正しい Notion API 形式
+
+```json
+{"type": "heading_1", "heading_1": {"rich_text": [{"type": "text", "text": {"content": "見出し1"}}]}}
+{"type": "heading_2", "heading_2": {"rich_text": [{"type": "text", "text": {"content": "見出し2"}}], "color": "orange_background"}}
+{"type": "heading_3", "heading_3": {"rich_text": [{"type": "text", "text": {"content": "見出し3"}}], "color": "brown_background"}}
+{"type": "bulleted_list_item", "bulleted_list_item": {"rich_text": [{"type": "text", "text": {"content": "箇条書き"}}]}}
+{"type": "numbered_list_item", "numbered_list_item": {"rich_text": [{"type": "text", "text": {"content": "番号付きリスト"}}]}}
+{"type": "code", "code": {"language": "python", "rich_text": [{"type": "text", "text": {"content": "コード"}}]}}
+```
+
+## 実装手順
+
+1. **コンテンツの構造化**: まず、追加したいコンテンツの構造を分析する
+2. **ブロックタイプの選択**: 各要素に適した Notion ブロックタイプを選択する
+3. **構造検証**: API 呼び出し前に構造を検証する
+   - children パラメータがオブジェクト配列か確認
+   - annotations が text オブジェクトの外部にあるか確認
+   - すべての annotations プロパティが指定されているか確認
+4. **段階的実装**: 大量のコンテンツは段階的に追加する
+5. **API 呼び出し**: `mcp_notionApi_API-patch-block-children`を使用してブロックを作成する
+6. **エラーハンドリング**: 構造エラーが発生した場合は修正して再試行する
+7. **検証**: 作成されたブロックが正しく表示されることを確認する
+
+## 例: レシピの作成
+
+### 構造
+
+- H1: レシピ名
+- H2: 材料
+- 箇条書きリスト: 材料リスト
+- H2: 手順
+- 番号付きリスト: 手順リスト
+
+### 実装
+
+```json
+[
+  {
+    "type": "heading_1",
+    "heading_1": {
+      "rich_text": [{ "type": "text", "text": { "content": "カレーの作り方" } }]
+    }
+  },
+  {
+    "type": "heading_2",
+    "heading_2": {
+      "rich_text": [{ "type": "text", "text": { "content": "材料" } }],
+      "color": "orange_background"
+    }
+  },
+  {
+    "type": "bulleted_list_item",
+    "bulleted_list_item": {
+      "rich_text": [{ "type": "text", "text": { "content": "豚肉（300g）" } }]
+    }
+  },
+  {
+    "type": "heading_2",
+    "heading_2": {
+      "rich_text": [{ "type": "text", "text": { "content": "手順" } }],
+      "color": "orange_background"
+    }
+  },
+  {
+    "type": "numbered_list_item",
+    "numbered_list_item": {
+      "rich_text": [{ "type": "text", "text": { "content": "具材を切る" } }]
+    }
+  }
+]
+```
+
+## 背景色設定ルール
+
+### 見出しの背景色
+
+- **H2 見出し**: 必ず背景色をオレンジ（`"color": "orange_background"`）に設定する
+- **H3 見出し**: 必ず背景色をブラウン（`"color": "brown_background"`）に設定する
+- **H1 見出し**: 背景色は設定しない（デフォルト）
+
+### 実装例
+
+```json
+// H2見出し（背景色オレンジ）
+{"type": "heading_2", "heading_2": {"rich_text": [{"type": "text", "text": {"content": "見出し"}}], "color": "orange_background"}}
+
+// H3見出し（背景色ブラウン）
+{"type": "heading_3", "heading_3": {"rich_text": [{"type": "text", "text": {"content": "小見出し"}}], "color": "brown_background"}}
+```
+
+## コンテンツ作成ルール
+
+### H2 ブロックのアイコン禁止
+
+- **H2 見出しにはアイコンを含めない**: H2 ブロックのテキストに絵文字やアイコンを追加してはならない
+- **理由**: 視覚的な一貫性を保ち、プロフェッショナルな外観を維持する
+
+### 文体ルール
+
+- **文体**: 「です。ます。」調ではなく「だ。である。」調で出力する
+- **例**:
+  - ❌ 間違い: 「これは重要なポイントです。」
+  - ✅ 正しい: 「これは重要なポイントだ」
+
+### 句点ルール
+
+- **文の最後の句点**: 文の最後に句点（。）を付与しない
+- **文と文の連携**: 文と文を連携する際の間の句点は通常通り付与する
+- **例**:
+  - ❌ 間違い: 「コンテンツを作成する。」
+  - ✅ 正しい: 「コンテンツを作成する」
+  - ✅ 文の連携例: 「吾輩は猫である。名前はまだない」
+
+### 実装例
+
+```json
+// H2見出し（アイコンなし、背景色オレンジ）
+{"type": "heading_2", "heading_2": {"rich_text": [{"type": "text", "text": {"content": "重要なポイント"}}], "color": "orange_background"}}
+
+// 段落（だ・である調、句点なし）
+{"type": "paragraph", "paragraph": {"rich_text": [{"type": "text", "text": {"content": "この方法は効果的だ"}}]}}
+
+// 段落（文の連携、句点あり）
+{"type": "paragraph", "paragraph": {"rich_text": [{"type": "text", "text": {"content": "吾輩は猫である。名前はまだない"}}]}}
+```
+
+## 注意事項
+
+- **一貫性**: 同じタイプのコンテンツには常に同じブロックタイプを使用する
+- **階層構造**: 見出しの階層（H1 > H2 > H3）を適切に使用する
+- **背景色**: H2 は必ずオレンジ、H3 は必ずブラウンの背景色を設定する
+- **アイコン禁止**: H2 ブロックにはアイコンや絵文字を含めない
+- **文体**: 「だ。である。」調で出力し、文の最後の句点（。）は付与しない（文と文の連携時は除く）
+- **箇条書きの構造**: タイトルと説明は必ず分離し、メイン項目（太字）と説明項目（インデント）で構造化する
+- **番号付きリストの構造**: タイトルと説明は必ず分離し、メイン項目（太字）と説明項目（インデント）で構造化する
+- **可読性**: ユーザーが読みやすい構造でコンテンツを整理する
+- **Notion ネイティブ**: Notion の機能を最大限活用する（トグル、コールアウト、データベースなど）
+
+## 構造エラー防止ルール
+
+### API 呼び出しの構造チェック
+
+#### mcp_notionApi_API-patch-block-children の正しい構造
+
+**必須パラメータ**:
+
+- `block_id`: 文字列（必須）
+- `children`: オブジェクト配列（必須）
+
+**❌ 間違った構造**:
+
+```json
+// childrenパラメータを文字列として渡す（エラー）
+"children": ["{\"type\": \"heading_1\", ...}"]
+
+// annotationsをtextオブジェクトの内部に配置（エラー）
+{"type": "text", "text": {"content": "テキスト", "annotations": {"bold": true}}}
+```
+
+**✅ 正しい構造**:
+
+```json
+// childrenパラメータをオブジェクト配列として渡す
+"children": [
+  {"type": "heading_1", "heading_1": {"rich_text": [{"type": "text", "text": {"content": "タイトル"}}]}}
+]
+
+// annotationsをtextオブジェクトの外部に配置
+{"type": "text", "text": {"content": "テキスト"}, "annotations": {"bold": true, "italic": false, "strikethrough": false, "underline": false, "code": false, "color": "default"}}
+```
+
+#### 構造検証チェックリスト
+
+1. **children パラメータ**: 必ずオブジェクト配列として渡す
+2. **annotations の配置**: text オブジェクトの外部に配置する
+3. **必須プロパティ**: すべての annotations プロパティを明示的に指定する
+4. **API 呼び出し前**: 構造を事前に検証する
+
+### よくある構造エラーと解決策
+
+#### エラー 1: children パラメータの形式エラー
+
+**症状**: `body.children[0] should be an object, instead was "..."`
+
+**原因**: children パラメータを文字列配列として渡している
+
+**解決策**:
+
+```json
+// ❌ 間違い
+"children": ["{\"type\": \"heading_1\", ...}"]
+
+// ✅ 正しい
+"children": [{"type": "heading_1", "heading_1": {...}}]
+```
+
+#### エラー 2: annotations の構造エラー
+
+**症状**: `annotations should be not present, instead was {...}`
+
+**原因**: annotations を text オブジェクトの内部に配置している
+
+**解決策**:
+
+```json
+// ❌ 間違い
+{"type": "text", "text": {"content": "テキスト", "annotations": {"bold": true}}}
+
+// ✅ 正しい
+{"type": "text", "text": {"content": "テキスト"}, "annotations": {"bold": true, "italic": false, "strikethrough": false, "underline": false, "code": false, "color": "default"}}
+```
+
+#### エラー 3: 不完全な annotations
+
+**症状**: `annotations`の一部プロパティが欠落している
+
+**解決策**: すべての annotations プロパティを明示的に指定する
+
+```json
+{
+  "type": "text",
+  "text": { "content": "テキスト" },
+  "annotations": {
+    "bold": true,
+    "italic": false,
+    "strikethrough": false,
+    "underline": false,
+    "code": false,
+    "color": "default"
+  }
+}
+```
+
+### 構造検証のベストプラクティス
+
+#### 1. 事前検証
+
+API 呼び出し前に以下の点を確認する：
+
+- [ ] children パラメータがオブジェクト配列か
+- [ ] annotations が text オブジェクトの外部にあるか
+- [ ] すべての annotations プロパティが指定されているか
+- [ ] 必須のプロパティが含まれているか
+
+#### 2. 段階的実装
+
+大量のコンテンツを一度に追加するのではなく、段階的に実装する：
+
+1. **第 1 段階**: 基本的なブロック（見出し、段落）を追加
+2. **第 2 段階**: リストアイテムを追加
+3. **第 3 段階**: 複雑な構造（annotations 付き）を追加
+
+#### 3. エラーハンドリング
+
+構造エラーが発生した場合：
+
+1. **エラーメッセージの確認**: 具体的な問題箇所を特定
+2. **構造の修正**: 問題のある部分を正しい形式に修正
+3. **再試行**: 修正した構造で再実行
+
+## トラブルシューティング
+
+### よくある問題
+
+1. **Markdown 記号が表示される**: paragraph ブロックで Markdown 記号を使用している
+
+   - 解決策: 適切なブロックタイプ（heading_2 など）を使用する
+
+2. **リストが正しく表示されない**: リストアイテムの構造が間違っている
+
+   - 解決策: bulleted_list_item または numbered_list_item を正しく使用する
+
+3. **コードブロックが認識されない**: 言語指定がない
+
+   - 解決策: code ブロックに language プロパティを追加する
+
+4. **H2 ブロックにアイコンが含まれる**: 絵文字やアイコンが自動的に追加される
+
+   - 解決策: H2 ブロックのテキストは純粋なテキストのみとし、アイコンを含めない
+
+5. **文体が「です。ます。」調になる**: 敬語調で出力される
+
+   - 解決策: 「だ。である。」調で出力し、文の最後の句点（。）は付与しない（文と文の連携時は除く）
+
+6. **箇条書きでタイトルと説明が同一行になる**: タイトルと説明が混在している
+   - 解決策: メイン項目（太字）と説明項目（インデント）を必ず分離する
+7. **番号付きリストでタイトルと説明が同一行になる**: タイトルと説明が混在している
+
+   - 解決策: メイン項目（太字）と説明項目（インデント）を必ず分離する
+
+8. **API 呼び出しで構造エラーが発生する**: children パラメータや annotations の構造が間違っている
+   - 解決策: 構造検証チェックリストに従って事前に検証する
+
+## ドキュメント構造化ルール
+
+### 見出しの使用パターン
+
+#### H2 ブロック（背景色オレンジ）の使用タイミング
+
+- **結論・要約**: 重要な結論や要約を提示する際
+- **主要な機能・概念**: 大きな機能や概念を説明する際
+- **大きなカテゴリ**: 複数のサブカテゴリを含む大きな分類
+
+#### H3 ブロック（背景色ブラウン）の使用タイミング
+
+- **具体的な分類・カテゴリ**: 詳細な分類やカテゴリを説明する際
+- **詳細な説明項目**: 具体的な機能や項目を説明する際
+- **技術的な概念**: 専門的な技術概念を説明する際
+
+### 太字の使用パターン
+
+#### 太字が使われるタイミング
+
+- **重要な概念・キーワード**: 文書の核心となる概念
+- **技術用語**: 専門的な技術用語
+- **機能の説明**: 主要な機能や特徴
+- **判断基準**: 重要な判断基準や指標
+
+### リストの使用パターン
+
+#### 番号付きリストの使用タイミング
+
+- **手順・プロセス**: 順序が重要な手順
+- **機能の列挙**: 優先順位のある機能
+- **段階的な説明**: 段階的に進む説明
+
+#### 箇条書きリストの使用タイミング
+
+- **同等の重要度の項目**: 並列の項目
+- **選択肢・オプション**: 複数の選択肢
+- **特徴・属性**: 項目の特徴や属性
+
+#### 箇条書きの構造化ルール
+
+- **タイトルと説明の分離**: メイン項目（太字）と説明項目（インデント）を必ず分離する
+- **階層的な情報整理**: メイン項目 → 説明項目 → 詳細項目の順で構造化する
+- **視覚的な区別**: 太字でタイトルを強調し、説明は通常のテキストで記載する
+
+#### 番号付きリストの構造化ルール
+
+- **タイトルと説明の分離**: メイン項目（太字）と説明項目（インデント）を必ず分離する
+- **階層的な情報整理**: メイン項目 → 説明項目 → 詳細項目の順で構造化する
+- **視覚的な区別**: 太字でタイトルを強調し、説明は通常のテキストで記載する
+
+### ネスト構造の箇条書き
+
+#### ネスト構造の実現方法
+
+Notion API でネスト構造（入れ子）の箇条書きを作成するには、**2 段階の手順**が必要だ。
+
+##### 手順 1: 親ブロックの作成
+
+まず、親の箇条書きアイテムを作成する。
+
+```json
+{"type": "bulleted_list_item", "bulleted_list_item": {"rich_text": [{"type": "text", "text": {"content": "小さく始める", "annotations": {"bold": true, "italic": false, "strikethrough": false, "underline": false, "code": false, "color": "default"}}]}}}
+```
+
+##### 手順 2: 子ブロックの追加
+
+作成した親ブロックの ID を取得し、その ID に対して子ブロックを追加する。
+
+```json
+// 親ブロックID: 289e3520-1110-8108-b09e-d527c8a7d772
+{
+  "type": "bulleted_list_item",
+  "bulleted_list_item": {
+    "rich_text": [
+      {
+        "type": "text",
+        "text": { "content": "最小限の機能から実装し、段階的に機能を追加する" }
+      }
+    ]
+  }
+}
+```
+
+##### 実装例
+
+```json
+// 1. 親ブロックを作成
+[
+  {"type": "bulleted_list_item", "bulleted_list_item": {"rich_text": [{"type": "text", "text": {"content": "小さく始める", "annotations": {"bold": true, "italic": false, "strikethrough": false, "underline": false, "code": false, "color": "default"}}]}}},
+  {"type": "bulleted_list_item", "bulleted_list_item": {"rich_text": [{"type": "text", "text": {"content": "定期的なフィードバック", "annotations": {"bold": true, "italic": false, "strikethrough": false, "underline": false, "code": false, "color": "default"}}]}}}
+]
+
+// 2. 各親ブロックに子ブロックを追加
+// 親ブロック1に子ブロックを追加
+mcp_notionApi_API-patch-block-children(block_id="親ブロック1のID", children=[子ブロック1])
+
+// 親ブロック2に子ブロックを追加
+mcp_notionApi_API-patch-block-children(block_id="親ブロック2のID", children=[子ブロック2])
+```
+
+##### 結果
+
+```
+- **小さく始める**
+    - 最小限の機能から実装し、段階的に機能を追加する
+- **定期的なフィードバック**
+    - ステークホルダーから早期かつ頻繁にフィードバックを得る
+```
+
+#### ネスト構造の注意事項
+
+- **2 段階の API 呼び出し**: 親ブロック作成 → 子ブロック追加の順序で実行する
+- **ブロック ID の取得**: 親ブロック作成時のレスポンスから block_id を取得する
+- **子ブロックの構造**: 子ブロックは通常の箇条書きアイテムとして作成する
+- **視覚的な区別**: 親項目は太字、子項目は通常テキストで区別する
+
+### コードブロックの使用パターン
+
+#### コードブロックが使われるタイミング
+
+- **実装例**: 具体的な実装方法
+- **比較例**: 良い例と悪い例の対比
+- **技術的な説明**: 専門的な技術説明
+
+### 文書構造化の癖
+
+#### ドキュメント構造の特徴
+
+1. **H2 で大分類** → **H3 で詳細分類** → **リストで具体化**
+2. **結論を最初に提示**: 重要な結論を文書の最初に配置
+3. **実践的な判断基準を最後に配置**: 具体的な判断基準を文書の最後に配置
+4. **コード例で具体化**: 抽象的な説明の後に具体的なコード例を提供
+
+### 視覚的な強調の癖
+
+#### 強調の使い分け
+
+- **太字**: 重要な概念やキーワード
+- **コード形式**: 技術用語（`any`, `unknown`, `zod`など）
+- **背景色**: H2 はオレンジ、H3 はブラウンで視覚的に区別
+- **記号**: ❌ と ✅ で悪い例と良い例を明確に区別
+
+### 実装例
+
+```json
+// H2見出し（結論・要約）
+{"type": "heading_2", "heading_2": {"rich_text": [{"type": "text", "text": {"content": "結論"}}], "color": "orange_background"}}
+
+// H3見出し（具体的な分類）
+{"type": "heading_3", "heading_3": {"rich_text": [{"type": "text", "text": {"content": "外部境界（Boundary）"}}], "color": "brown_background"}}
+
+// 太字を含む段落
+{"type": "paragraph", "paragraph": {"rich_text": [{"type": "text", "text": {"content": "TypeScriptの型チェックをどこまで行うべきかは、"}}, {"type": "text", "text": {"content": "コストと安全性のトレードオフ", "annotations": {"bold": true}}}, {"type": "text", "text": {"content": "で判断する"}}]}}
+
+// 番号付きリスト（手順）
+{"type": "numbered_list_item", "numbered_list_item": {"rich_text": [{"type": "text", "text": {"content": "タスク管理の自動化と効率化", "annotations": {"bold": true}}}]}}
+
+// 箇条書きリスト（タイトルと説明を分離）
+{"type": "bulleted_list_item", "bulleted_list_item": {"rich_text": [{"type": "text", "text": {"content": "APIレスポンス", "annotations": {"bold": true}}}]}}
+{"type": "bulleted_list_item", "bulleted_list_item": {"rich_text": [{"type": "text", "text": {"content": "サーバーからの応答データを構造化して返す"}}]}}
+
+// 番号付きリスト（タイトルと説明を分離）
+{"type": "numbered_list_item", "numbered_list_item": {"rich_text": [{"type": "text", "text": {"content": "顧客ヒアリング", "annotations": {"bold": true}}}]}}
+{"type": "numbered_list_item", "numbered_list_item": {"rich_text": [{"type": "text", "text": {"content": "ビジネス要件の抽出と整理"}}]}}
+{"type": "numbered_list_item", "numbered_list_item": {"rich_text": [{"type": "text", "text": {"content": "要件定義書の作成", "annotations": {"bold": true}}}]}}
+{"type": "numbered_list_item", "numbered_list_item": {"rich_text": [{"type": "text", "text": {"content": "システムに必要な機能を文書化する"}}]}}
+
+// コードブロック（実装例）
+{"type": "code", "code": {"language": "typescript", "rich_text": [{"type": "text", "text": {"content": "import { z } from 'zod';"}}]}}
+```
+
+## 文書作成の暗黙のルール
+
+### 基本原則
+
+1. **結論ファースト**: 重要な結論を最初に提示する
+2. **階層的な情報整理**: H2→H3→ リストの順で詳細化する
+3. **実践的な具体例**: 抽象的な説明の後に具体的なコード例を提供する
+4. **視覚的な区別**: 背景色と太字で情報の重要度を表現する
+5. **比較による理解促進**: 良い例と悪い例の対比を活用する
+
+### 文書構造のテンプレート
+
+```
+H2: 結論・要約
+├─ 段落: 重要なポイント
+├─ H3: 詳細分類1
+│  ├─ 箇条書き/番号付きリスト
+│  └─ コード例（必要に応じて）
+├─ H3: 詳細分類2
+│  ├─ 箇条書き/番号付きリスト
+│  └─ コード例（必要に応じて）
+└─ H2: 実践的な判断基準
+   └─ 具体的なガイドライン
+```
+
+このルールブックに従って、常に Notion のネイティブブロックを使用してコンテンツを作成すること。

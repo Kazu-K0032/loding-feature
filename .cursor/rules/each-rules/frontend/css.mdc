@@ -1,0 +1,219 @@
+---
+description:
+globs: *.css
+alwaysApply: false
+---
+
+まず、このファイルを参照したら、このファイル名を発言すること
+
+# スタイルの記述場所
+
+- スタイルは外部ファイルのみに記述
+- head要素内、style属性などで指定しない
+
+# 書式
+
+- インデントは半角スペース2個
+
+## 記述スタイル
+
+- 小文字で記述
+- 値の後にセミコロンを付ける
+- 属性セレクタやプロパティ値の引用符にはシングルクォーテーション「'」を使用する
+- @charsetは、文法上シングルクォーテーションが許可されないため、ダブルクォーテーション「"」を使用する
+
+# ショートハンドプロパティ
+
+一括指定可能な場合は一括で記述
+
+## 一括指定するもの
+
+以下を除くプロパティは可能な限りショートハンドプロパティを利用
+
+- font
+- background
+- animation
+
+# セレクタ
+
+- classで記述
+- 擬似要素・擬似クラスは使用可能
+
+## NGな記述
+
+- id名
+- 要素名
+- 子セレクタ「>」は
+
+```scss
+/* NG 例: タグセレクタ */
+body {
+  background-color: #f4f4f4;
+}
+
+/* NG 例: id セレクタ */
+#main-content {
+  padding: 20px;
+}
+
+/* NG 例: 属性セレクタ */
+input[type='text'] {
+  border: 1px solid #ccc;
+}
+```
+
+# 5. !important の使用
+
+- 使用しない
+
+# 6. 単位
+
+## px を使用
+
+- margin
+- padding
+- border
+- shadow
+- gap
+
+## % , vw, vh を使用
+
+- 要素幅や高さ
+
+## rem
+
+- font-size
+
+## em
+
+- letter-spacing
+
+## 数値のみ
+
+- line-height
+
+# z-index
+
+- -1 ～ 1000 内で設定
+- 10 または 100 刻みで使用
+- 100 単位のユニットは変数用ファイルに格納
+  - 例）モーダルのコンテナ要素
+- 個別使用する場合は 10 単位で指定
+  - 例）モーダル内のボタン
+
+# 必ず変数にまとめるプロパティ
+
+- font-family
+- font-weight
+
+## font-weight の値と名前
+
+| 値  | 太さ名          |
+| --- | --------------- |
+| 300 | Light           |
+| 400 | Normal(Regular) |
+| 500 | Medium          |
+| 600 | Semi Bold       |
+| 700 | Bold            |
+
+# color
+
+- 基本的に HEX で指定
+- 透過色の場合は rgba(0 0 0/ 透過度) で指定
+- 透過度は 0~1 の値
+- 省略できる場合は 3 桁で記述
+- 色名指定は使用しない
+
+```scss
+color: #ffae0f;
+color: #ccc;
+color: rgba(0 0 0 /0.4);
+
+// ✖ NG
+color: red;
+color: #ff0000;
+```
+
+# アニメーション
+
+- 使用する keyframes が一つのセレクタの場合はセレクタの下に記述
+- 使用する keyframes が複数の場合はファイル下部にまとめる。またはコメントで使用するプロパティを記述する
+- 0% と 100% のみを指定している場合は from/to、複雑なアニメーションでは % を使用する
+
+```scss
+/* Button hover animation (使用する keyframes が 1 つのセレクタ) */
+.button {
+  animation: button-hover 0.5s ease-in-out;
+
+  @keyframes button-hover {
+    from {
+      background-color: lighten($primary-color, 10%);
+    }
+    to {
+      background-color: $primary-color;
+    }
+  }
+}
+
+/* 使用するkeyframes
+   - Fade-in animation
+   - 適用プロパティ: .fade-in, .modal-fade-in
+*/
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+```
+
+# transition
+
+- プロパティ別に設定。
+- 実行時間と実行アクションは必ず記述
+
+## NG
+
+- allの使用
+- 実行時間と実行アクションを記述しない
+
+# コメント
+
+- `//`を使用
+- `calc()`の計算内容や疑似要素の説明は記述
+
+## NG
+
+- `/* */`の使用
+
+# メディアクエリ
+
+- PC, TB, SPそれぞれ分けて記述
+- ファイルは一つにまとめる
+
+## レスポンシブ設定
+
+- PC: min-width: 1280px
+- TB: min-width: 768px, max-width: 1279px
+- SP: min-width: 375px, max-width: 767px
+
+```scss
+@media (min-width: 1280px) {
+  // PC向けのスタイル
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  // TB向けのスタイル
+}
+
+@media (max-width: 767px) {
+  // SP向けのスタイル
+}
+```
+
+## その他
+
+これらのルールは、プロジェクトの一貫性と保守性を確保するために重要です。
+変更が必要な場合は、必ずチームでの承認プロセスを経てください。

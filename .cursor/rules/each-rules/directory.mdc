@@ -1,0 +1,84 @@
+---
+alwaysApply: true
+---
+
+このファイル名を発言すること
+
+# ディレクトリールールブック
+
+## Next.jsディレクトリ構成
+
+Next.js/TypeScriptによるコーディングを行う場合、以下の責務分離を意識する事
+
+- src/app
+  - ページ
+- src/context/\*\*
+  - 共通コンテキスト
+- src/hooks/useXXX.ts
+  - 共通フック
+- src/features/\*\*
+  - 機能コンポーネント
+- src/components/\*\*
+  - 共通コンポーネント
+- src/utils/\*_/_.utils.ts
+  - 共通ユーティリティ関数
+- src/constants/\*.constants.ts
+  - 共通定数
+- src/types/\*.types.ts
+  - 共通型定義ファイル
+
+#### features, componentsのディレクトリ構成
+
+例:
+
+```
+bot/
+├── index.ts
+├── Bot.constants.ts
+├── Bot.tsx
+├── Bot.types.ts
+├── _shared
+│   ├── constants
+│   │   ├── date.constants.ts
+│   │   └── style.constants.ts
+│   ├── post-date-time
+│   │   ├── PostDateTime.constants.ts
+│   │   └── PostDateTime.tsx
+│   └── types
+│       └── frequency.types.ts
+└── system-pattern
+    ├── SystemPattern.constants.ts
+    ├── SystemPattern.tsx
+    ├── SystemPattern.types.ts
+    ├── custom-pattern
+    │   └── CustomPattern.tsx
+    ├── order-pattern
+    │   └── OrderPattern.tsx
+    └── useSystemPattern.ts
+```
+
+- フォルダ名は小文字ケバブケース
+- index.tsは外部で使われるものを最小限に定義
+  - 外部からインポートする場合はindex.tsを参照する
+- 定数ファイルは.constants.ts, 型定義ファイルは.types.ts, ユーティリティ関数は.utils.ts
+- メインとなるコンポーネントは大文字キャメルケース.tsx, フックはuseXXX.ts
+
+## Prisma構成
+
+Prismaによるコーディングを行う場合、以下の責務分離を意識する事
+※そのシステムで使用されてない場合は勝手に実装しない事
+
+```
+.
+├── schema.prisma
+├── seed
+│   └── sample-data.sql
+└── seed.ts
+```
+
+- データは`seed/`に格納し、`seed.ts`実行時に`seed/`にある全てのファイルが実行されるようにすること
+
+## コーディング規約
+
+- TypeScript: ECMAScriptの推奨される記述を意識する
+- コード: リーダブルなものにする

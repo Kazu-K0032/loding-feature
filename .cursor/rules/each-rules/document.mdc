@@ -1,0 +1,86 @@
+---
+description: README.md
+globs:
+alwaysApply: false
+---
+
+ルートにあるREADME.mdファイルを修正する場合、このファイル名を発言すること
+
+# README.md ルールブック
+
+日本語版と英語版2つのファイルを作成/調整すること
+
+## 日本語版
+
+- 対象ファイル: ルートのREADME.md
+- 画像パスは: docs/images/\*.png
+
+## 英語版
+
+- 対象ファイル: docs/lang/en.md
+- 日本語版の英訳したものを記載する事
+  - 日本語は読めないが英語は読める人向けに作成するため、伝わる文章を意識すること
+- 画像等のパスは、日本語版で参照されているパスに合わさるように調整すること
+
+## README.mdのフォーマット
+
+````markdown
+# <リポジトリ名>
+
+[English](./docs/lang/en.md) | 日本語
+
+<リポジトリの概要を簡潔に記載>
+
+## 機能紹介(またはUI紹介)
+
+### <機能を紹介する場合の例>
+
+- **スクレイピング**
+  - 指定したページのコンテンツを取得しJSON形式で返す
+
+### <UIを紹介する場合の例>
+
+<div style="display: flex; flex-wrap: wrap; gap: 16px;">
+  <figure style="flex: 1 1 45%; min-width: 250px; margin: 0;">
+    <img src="./docs/images/ui-1.png" alt="アプリ一覧画面" style="width: 100%;" />
+    <figcaption>アプリ一覧画面</figcaption>
+  </figure>
+  <figure style="flex: 1 1 45%; min-width: 250px; margin: 0;">
+    <img src="./docs/images/ui-2.png" alt="スケジュールアプリ画面" style="width: 100%;" />
+    <figcaption>スケジュールアプリ画面</figcaption>
+  </figure>
+</div>
+
+## 導入手順
+
+### リポジトリのクローン
+
+```bash
+git clone <repository>
+cd <リポジトリ名>
+```
+
+### 依存関係インストール
+
+```bash
+npm install
+
+# または
+pnpm install
+```
+
+### サーバー起動
+
+```bash
+npm run dev
+
+# または
+pnpm dev
+```
+
+<リポジトリの導入からアプリの表示またはスクリプト実行までのフローを簡潔に記載>
+````
+
+```
+
+```
