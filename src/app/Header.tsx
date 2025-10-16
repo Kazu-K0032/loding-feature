@@ -28,6 +28,10 @@ export function Header({ title = SITE_TITLE }: HeaderProps) {
       key: CONTENT_CONFIG.ACCOUNTS.path,
       label: CONTENT_CONFIG.ACCOUNTS.name,
     },
+    {
+      key: CONTENT_CONFIG.LOADING_SSE.path,
+      label: CONTENT_CONFIG.LOADING_SSE.name,
+    },
   ];
 
   /**

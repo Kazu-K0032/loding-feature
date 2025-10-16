@@ -37,4 +37,9 @@ export const CONTENT_CONFIG = {
     name: "タスク管理",
     path: "/tasks",
   },
+  LOADING_SSE: {
+    key: "loading-sse",
+    name: "SSE ローディング",
+    path: "/loading-sse",
+  },
 } as const;
