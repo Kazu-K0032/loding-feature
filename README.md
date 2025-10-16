@@ -1,4 +1,4 @@
-# Template Todo App
+# Loding Feature
 
 [English](./docs/lang/en.md) | 日本語
 
@@ -27,7 +27,7 @@ Next.js/Antd を使用した Todo アプリケーション
 
    ```bash
    git clone <repository-url>
-   cd template-todo-app
+   cd loding-feature
    ```
 
 2. 依存関係のインストール

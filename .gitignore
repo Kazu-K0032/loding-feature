@@ -39,3 +39,6 @@ next-env.d.ts
 
 .swc/
 mcp.json
+
+package-lock.json
+pnpm-lock.yaml
